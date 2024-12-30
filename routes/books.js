@@ -1,102 +1,125 @@
-const mongodb = require('mongodb');
 const express = require('express');
 
 const router = express();
+const Book = require("../models/books")
+router.use(getAllBooks); //write the middleware in the end.
 
-const db = require('../connection')
-const collection = db.collection('books');
-
-router.get("/", async(req, res) => {
+router.get("/", (req, res) => {
     console.log(req.method);
     console.log(req.url);
     console.log(req.query);
-
-    try {
-        const books  = await collection.find().toArray();
-        res.json(books)
-    } catch (error) {
-        res.status(500).json({ message: "Unable to fetch books from the database" });
-    }
+    res.json(req.books);
 });
 
-router.get("/:id", getObjectId, async(req, res) => {
+router.get("/:id",async (req, res) => {
     console.log(req.method);
     console.log(req.url);
     console.log("Fetching:", req.params.id);
     console.log(req.query);
-    try {
-        const book  = await collection.findOne({
-            _id: req.objId,
-        });
-        res.json(book)
-    } catch (error) {
-        res.status(500).json({ message: "Unable to fetch book from the database" });
+    console.log(Book);
+    try{
+        const book = await Book.findById(req.params.id);
+        console.log(book);
+        res.json(book);
+    }catch(err){
+        console.log(err.message);
+        res.status(500).json({message: err.message});
     }
     });
 
 router.post("/", async(req, res) => {
     console.log(req.method);
     console.log(req.body);
-    
-    // const { title, author, publishedDate , genre, price } = req.body;
-    // const newBook = {  title, author, publishedDate , genre, price };
+    const {  title, author, publishedDate , genre, price } = req.body;
+    try{
 
-    try {
-        await collection.insertMany(req.body)
-        res.json(req.body)
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "unable to open a file while writing on server" });
-        return;
+        //method 1 saved.
+        // const newBook = new Book({ title, author, publishedDate, genre, price });
+        // const result = await newBook.save();
+        // res.json(result);
+
+
+        //method 2 create.
+
+        const result = await Book.create({  title, author, publishedDate , genre , price });
+        res.json(result);  // it directly save in single step only
+    }catch(err){
+        console.log(err.message);
+        res.status(500).json({message: err.message});
     }
 });
 
-router.patch("/:id", getObjectId, async(req, res) => {
+router.patch("/:title", async(req, res) => {
     console.log(req.method);
     console.log(req.url);
-    console.log("Editing:", req.params.id);
+    console.log("Editing:", req.params.title);
     console.log(req.body);
 
     const {  title, author, publishedDate , genre, price } = req.body;
 
     try {
-        let result = await collection.findOneAndUpdate(
-            {_id: req.objId},
-            {
-                $set: { 
-                    title, author, publishedDate , genre, price 
-                }
-            },  { returnDocument: "after" })
-            res.json(result)
+        const result =  await Book.findOneAndUpdate({title: req.params.title}, 
+        { title, author, publishedDate , genre, price },
+        {new: true} // return updated documents.
+        )
+        if (!result) {
+            return res.status(404).json({ message: `Book with the title :  "${req.params.title}" not found` });
+        }
+        res.json(result);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Unable to modify book data" });
+        res.status(500).json({ message: err.message });
         return;
     }
 });
 
-router.delete("/:id", getObjectId, async(req, res) => {
+router.delete("/:title",  async(req, res) => {
     console.log(req.method);
     console.log(req.url);
-    console.log("Deleting:", req.params.id);
+    console.log("Deleting:", req.params.title);
 
-    try {
-        const book = await collection.findOneAndDelete(
-            {_id: req.objId}
+    try{
+        const result = await Book.findOneAndDelete(
+            {title: req.params.title},
         )
-        res.json(book)
-    } catch (error) {
-        console.error(err);
-        res.status(500).json({ message: "Unable to modify book data" });
-        return;
+        if(!result){
+            return res.status(404).json({ message: `Book with the title :  "${req.params.title}" not found` }); 
+        }
+        res.json(result);
+    }catch(err){
+        console.log(err.message);
+        res.status(500).json({message: err.message});
     }
 });
 
-  function getObjectId(req, res, next){
-    const objId = new mongodb.ObjectId(req.params.id)
-    req.objId = objId;
-    next();
-  }
+router.get("/genre/:genre", async (req, res) =>{
+    console.log(req.method)
+    console.log(req.url);
+    // const genre = req.params.genre;
+    try{
+        const result = await Book.find({genre: req.params.genre})
+        if(!result){
+            return res.status(500).json({message: `Book with the title :  "${req.params.genre}" not found`})
+        }
+        res.json(result);
+    }catch(err){
+        console.log(err.message);
+        res.status(500).json({message: err.message});
+    
+    }
+})
 
+
+
+async function getAllBooks(req, res, next){
+    try {
+        const books  = await Book.find();
+        req.books = books;
+        next();
+    } catch (error) {
+        res.status(500).json({ message: err.message });
+        return;
+    }
+}
 
 module.exports = router
