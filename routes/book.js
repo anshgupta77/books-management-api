@@ -3,9 +3,10 @@ const express = require('express');
 const router = express();
 const Book = require("../models/book");
 const Author = require("../models/author");
-
+const {authToken, isAdmin} = require("../middleware/authentication");
 const {getAllBooks, getBookById, addBook, updateBook, deleteBook, findBookByGenre} = require("../controlllers/books");
 
+router.use(authToken);
 
 router.get("/", async (req, res) => {
     console.log(req.method);
@@ -36,7 +37,7 @@ router.get("/:id",async (req, res) => {
     }
     });
 
-router.post("/", async(req, res) => {
+router.post("/", isAdmin, async(req, res) => {
     console.log(req.method);
     console.log(req.body);
     const {  title, authors, publishedYear , genres, price } = req.body;

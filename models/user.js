@@ -9,6 +9,13 @@ const userSchema = new mongoose.Schema({
         type: String,
 
     },
+    password:{
+        type: String,
+    },
+    role:{
+        type: String,
+        default: "user",
+    },
     borrowedBooks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Books"

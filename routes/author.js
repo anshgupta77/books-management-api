@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 const Author = require('../models/author');
+const {isAdmin} = require("../middleware/authentication");
 // const {
 //   getAuthors,
 //   addAuthor,
@@ -22,7 +23,7 @@ router.get("/", async function (req, res){
     }
 });
 
-router.post("/", async function (req, res){
+router.post("/", isAdmin, async function (req, res){
         try {
           const newAuthor = await new Author(req.body);
           const result = await newAuthor.save();

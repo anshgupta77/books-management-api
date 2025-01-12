@@ -4,8 +4,12 @@ const router = express.Router();
 const User = require("../models/user");
 const BorrowRecord = require("../models/borrowRecord");
 const Book = require("../models/book");
+const {authToken, isAdmin} = require("../middleware/authentication");
+
+router.use(authToken);
 
 router.get("/", async (req, res) =>{
+    console.log(req.user);
     try {
         const users = await User.find().populate("borrowedBooks", "title authors price");
         res.json(users);
@@ -29,10 +33,10 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.post("/", async (req, res) =>{
-    const {name, email} = req.body;
+router.post("/", isAdmin, async (req, res) =>{
+    const {email} = req.body;
     try{
-        const result = await User.find({name: name});
+        const result = await User.findOne({email: email});
 
         if(result){
             return res.status(404).json({message: "User already exist"});

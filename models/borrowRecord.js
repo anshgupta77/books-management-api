@@ -4,13 +4,13 @@ const BorrowRecordSchema = mongoose.Schema(
   {
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Users",
         required: true,
       },
       bookId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Book",
+      ref: "Books",
     },
     borrowDate: {
       type: Date,
