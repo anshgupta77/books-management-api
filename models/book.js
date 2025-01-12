@@ -27,7 +27,15 @@ const bookSchema = new mongoose.Schema({
     price: {
         type: Number,
         min: [0, "Price must be positive number"] 
-    }
+    },
+    availability :{
+        type: Boolean,
+        default: true,
+      },
+    assignedTo: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }]
 
 })
 

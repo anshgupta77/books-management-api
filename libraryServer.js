@@ -26,6 +26,11 @@ app.use("/books", bookRouter);
 const authorRouter = require("./routes/author");
 app.use("/authors", authorRouter)
 
+const userRouter = require("./routes/user");
+app.use("/users", userRouter);
+
+const borrowRecordRouter = require("./routes/borrowRecord");
+app.use("/borrowedrecords", borrowRecordRouter);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 
 const BorrowRecordSchema = mongoose.Schema(
   {
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
       },
-    book: {
+      bookId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Book",
@@ -18,19 +18,17 @@ const BorrowRecordSchema = mongoose.Schema(
     },
     dueDate: {
       type: Date,
-      required: true,
+      default: function(){
+        const due = new Date();
+        due.setDate(due.getDate() + 7);
+        return due;
+      }
     },
     returnDate: {
       type: Date,
-      validate: {
-        validator: function (val) {
-          return !val || val > this.borrowDate;
-        },
-        message: "Return date must be after borrow date.",
-      },
     },
+    
   },
-  { timestamps: true }
 );
 
 const BorrowRecord = mongoose.model("BorrowRecord", BorrowRecordSchema);
